@@ -1,8 +1,8 @@
-$modelname									"MODELPATH"
+$modelname									"MODELPATHMODELNAME.mdl"
 $body 			MODELNAME					"MODELNAME.smd"
 $staticprop
 $surfaceprop								SURFACE
-$cdmaterials								"modelsMODELPATH"
+$cdmaterials								"models\MODELPATH"
 
 $sequence 		idle						"MODELNAME.smd"
 

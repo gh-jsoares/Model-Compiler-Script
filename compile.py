@@ -47,21 +47,24 @@ def main():
         PARENT_DIR) if os.path.isdir(f"{PARENT_DIR}/{f}")]
     for propDir in propDirs:
         currentDir = f"{PARENT_DIR}/{propDir}"
-        smdfiles = [f for f in os.listdir(f"{currentDir}") if os.path.isfile(
+        smdfiles = [f for f in os.listdir(currentDir) if os.path.isfile(
             f"{currentDir}/{f}") and f.find(".smd") != -1 and f.find("phys") == -1]
-        qcfiles = [f for f in os.listdir(f"{currentDir}") if os.path.isfile(
+
+        qcfiles = [f for f in os.listdir(currentDir) if os.path.isfile(
             f"{currentDir}/{f}") and f.find(".qc") != -1]
 
-        # no smd or already compiled
-        if len(smdfiles) == 0 or len(qcfiles) != 0:
+        if len(smdfiles) != 0 and len(qcfiles) == 0:
+            modelName = smdfiles[0].split(".smd")[0]
+            infoMessage(f"Selected model '{currentDir}/{modelName}'")
+            chosenPath = requestModelCategory()
+            chosenSurface = requestSurfaceProp()
+            saveFile(currentDir, modelName, chosenPath, chosenSurface)
+            requestCompileModel(currentDir, modelName)
             continue
-
-        modelName = smdfiles[0].split(".smd")[0]
-        infoMessage(f"Selected model '{currentDir}/{modelName}'")
-        chosenPath = requestModelCategory()
-        chosenSurface = requestSurfaceProp()
-        saveFile(f"{currentDir}",
-                 modelName, chosenPath, chosenSurface)
+        elif len(qcfiles) != 0:
+            modelName = qcfiles[0].split(".qc")[0]
+            infoMessage(f"Selected model '{currentDir}/{modelName}'")
+            requestCompileModel(currentDir, modelName)
 
 
 def saveFile(propDir, modelName, modelPath, surface):
@@ -73,6 +76,23 @@ def saveFile(propDir, modelName, modelPath, surface):
     output.writelines(newcontent)
     output.close()
     successMessage(f"Saved {qcFile}")
+
+
+def requestCompileModel(propDir, modelName):
+    infoMessage("Compile model? (y/N)")
+    option = input("> ")
+    if option.lower() == "y":
+        compileModel(propDir, modelName)
+
+
+def compileModel(propDir, modelName):
+    winDir = propDir.replace("/", "\\") + "\\" + modelName + ".qc"
+    res = os.system(f"cmd.exe /C \"compile.bat {winDir}\"")
+    if res == 0:
+        successMessage("Compiled model")
+    else:
+        errorMessage("Failed to compile the model")
+        input("Press enter to continue")
 
 
 def requestSurfaceProp():
@@ -223,11 +243,11 @@ def requestSurfaceProp():
 
 def requestModelCategory():
     paths = [
-        "\\ayjay\\props\\furniture\\",
-        "\\ayjay\\props\\furniture\\casino\\",
-        "\\ayjay\\props\\environment\\",
-        "\\ayjay\\props\\environment\\casino\\",
-        "\\ayjay\\props\\environment\\street\\",
+        "ayjay\\props\\furniture\\",
+        "ayjay\\props\\furniture\\casino\\",
+        "ayjay\\props\\environment\\",
+        "ayjay\\props\\environment\\casino\\",
+        "ayjay\\props\\environment\\street\\",
     ]
     while True:
         infoMessage("Choose the path for this model:")
